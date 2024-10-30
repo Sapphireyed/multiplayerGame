@@ -1,4 +1,6 @@
 import pygame
+from utils import make_pos, read_pos
+from network import Network
 
 width = 500
 height = 500
@@ -18,6 +20,7 @@ class Player():
         self.vel = 3
 
     def draw(self, win):
+        print(self.rect)
         pygame.draw.rect(win, self.color, self.rect)
 
     def move(self):
@@ -35,25 +38,36 @@ class Player():
         if keys[pygame.K_DOWN]:
             self.y += self.vel
 
+        self.update()
+
+    def update(self):
         self.rect = (self.x, self.y, self.width, self.height)
 
-def redrawWindow(win, player):
+def redrawWindow(win, player, player2):
     win.fill((255, 255, 255))
     player.draw( win)
+    player2.draw( win)
     pygame.display.update()
 
 def main():
     run = True
-
-    p = Player(50, 50, 100, 100, (0, 255, 0))
+    n = Network()
+    startPos = read_pos(n.get_pos())
+    p = Player(startPos[0], startPos[1], 100, 100, (0, 255, 0))
+    p2 = Player(0, 0, 100, 100, (255, 0, 0))
 
     while run:
+        p2Pos = read_pos(n.send(make_pos((p.x, p.y))))
+        p2.x = p2Pos[0]
+        p2.y = p2Pos[1]
+        p2.update()
+
         for event in pygame.event.get():
             if event.type  == pygame.QUIT:
                 run = False
                 pygame.quit()
 
         p.move()
-        redrawWindow(win, p)
+        redrawWindow(win, p, p2)
 
 main()
